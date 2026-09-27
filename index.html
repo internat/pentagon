@@ -1,0 +1,1680 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ОТЧЁТ AIDA-2026-001 — Интеллектуальная система анализа данных</title>
+<style>
+/* ======================================================================
+   ОТЧЁТ / REPORT — design system
+   Палитра: тёмный сланец + стальная синь + оливковый + песочный.
+   Без кислотных цветов, всё приглушённое и сочетающееся.
+   ====================================================================== */
+:root{
+  --bg:#0c1117;
+  --bg2:#10161e;
+  --panel:#141c26;
+  --panel2:#18222e;
+  --line:#26323f;
+  --line2:#33414f;
+  --text:#d6dee7;
+  --muted:#8494a6;
+  --dim:#5e6d7d;
+  --steel:#5b7fa6;
+  --steel-d:#3f5f81;
+  --olive:#8a9a5b;
+  --olive-d:#6b7f4e;
+  --sand:#c9a961;
+  --rust:#a56a4a;
+  --paper:#efece2;
+  --mono:"JetBrains Mono","Cascadia Mono",Consolas,"Courier New",monospace;
+  --sans:"Segoe UI",system-ui,-apple-system,sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  font-family:var(--sans);
+  background:var(--bg);
+  color:var(--text);
+  line-height:1.6;
+  min-height:100vh;
+  background-image:
+    linear-gradient(rgba(91,127,166,.045) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(91,127,166,.045) 1px,transparent 1px);
+  background-size:44px 44px;
+  animation:drift 90s linear infinite;
+}
+@keyframes drift{from{background-position:0 0,0 0}to{background-position:44px 44px,44px 44px}}
+::selection{background:var(--steel-d);color:#fff}
+
+/* ---------- classification strips ---------- */
+.classbar{
+  position:sticky;top:0;z-index:60;
+  background:#0a0e13;border-bottom:1px solid var(--line);
+  font-family:var(--mono);font-size:11px;letter-spacing:3px;
+  color:var(--olive);text-align:center;padding:7px 10px;
+  text-transform:uppercase;
+}
+.classbar span{opacity:.85}
+.classbar .sep{color:var(--dim);margin:0 10px}
+.march{
+  height:3px;
+  background:repeating-linear-gradient(90deg,var(--olive-d) 0 14px,transparent 14px 28px);
+  background-size:28px 100%;
+  animation:march 1.4s linear infinite;
+  opacity:.55;
+}
+@keyframes march{to{background-position:28px 0}}
+@keyframes pulse{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(138,154,91,.55)}50%{opacity:.55;box-shadow:0 0 0 6px rgba(138,154,91,0)}}
+
+/* ---------- header ---------- */
+.header{
+  position:relative;overflow:hidden;
+  border-bottom:1px solid var(--line);
+  background:linear-gradient(160deg,#121a24 0%,#0e141c 55%,#0c1117 100%);
+  padding:44px 30px 30px;
+}
+.header::after{
+  content:"";position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(180deg,transparent 0,rgba(201,169,97,.05) 50%,transparent 100%);
+  height:120px;animation:sweep 7s ease-in-out infinite;
+}
+@keyframes sweep{0%{transform:translateY(-140px)}100%{transform:translateY(110vh)}}
+.header-inner{max-width:1320px;margin:0 auto;display:flex;gap:26px;align-items:flex-start;position:relative;z-index:2}
+.emblem{flex:0 0 auto;width:86px;height:86px;filter:drop-shadow(0 4px 14px rgba(0,0,0,.5))}
+.emblem .ring{animation:spin 34s linear infinite;transform-origin:50% 50%}
+@keyframes spin{to{transform:rotate(360deg)}}
+.hd-txt{flex:1;min-width:0}
+.doctype{font-family:var(--mono);font-size:11px;letter-spacing:5px;color:var(--sand);text-transform:uppercase;margin-bottom:8px}
+h1{
+  font-family:var(--mono);font-size:clamp(22px,3.4vw,40px);line-height:1.2;
+  font-weight:700;letter-spacing:1px;color:#eef3f8;text-transform:uppercase;
+}
+h1 .cur{color:var(--olive);animation:blink 1s steps(2) infinite}
+@keyframes blink{50%{opacity:0}}
+.subtitle{color:var(--muted);margin-top:10px;font-size:15px;max-width:820px}
+.meta-grid{
+  margin-top:20px;display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));
+  gap:8px;max-width:1000px;
+}
+.meta-cell{background:#121a24;border:1px solid var(--line);padding:9px 13px}
+.meta-cell .k{font-family:var(--mono);font-size:9.5px;letter-spacing:2px;color:var(--dim);text-transform:uppercase}
+.meta-cell .v{font-family:var(--mono);font-size:13px;color:var(--text);margin-top:2px;overflow-wrap:anywhere}
+.meta-cell .v.on{color:var(--olive)}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--olive);
+  vertical-align:middle;margin-right:7px;animation:pulse 1.6s ease-in-out infinite}
+.hd-actions{margin-top:18px;display:flex;gap:10px;flex-wrap:wrap}
+.stamp{
+  position:absolute;right:34px;top:36px;transform:rotate(-9deg);
+  border:3px double var(--rust);color:var(--rust);
+  font-family:var(--mono);font-size:13px;letter-spacing:4px;padding:7px 14px;
+  text-transform:uppercase;opacity:.72;pointer-events:none;
+  animation:stampIn .7s .5s ease-out backwards;
+}
+@keyframes stampIn{from{transform:rotate(-9deg) scale(1.7);opacity:0}to{transform:rotate(-9deg) scale(1);opacity:.72}}
+
+/* ---------- buttons ---------- */
+.btn{
+  font-family:var(--mono);font-size:12px;letter-spacing:1.6px;text-transform:uppercase;
+  padding:10px 18px;background:var(--panel2);color:var(--text);
+  border:1px solid var(--line2);cursor:pointer;transition:.18s;text-decoration:none;display:inline-block;
+}
+.btn:hover{background:#1f2b39;border-color:var(--steel);transform:translateY(-2px)}
+.btn.primary{background:var(--steel-d);border-color:var(--steel);color:#eef4fa}
+.btn.primary:hover{background:var(--steel)}
+.btn.olive{background:var(--olive-d);border-color:var(--olive);color:#f4f7ee}
+.btn.olive:hover{background:var(--olive);color:#10161e}
+.btn:disabled{opacity:.45;cursor:not-allowed;transform:none}
+.btn.big{font-size:14px;padding:14px 28px;letter-spacing:2.5px}
+
+/* ---------- nav ---------- */
+nav{
+  position:sticky;top:27px;z-index:50;background:rgba(12,17,23,.96);
+  backdrop-filter:blur(6px);border-bottom:1px solid var(--line);
+  display:flex;flex-wrap:wrap;gap:2px;padding:0 20px;
+}
+.tabbtn{
+  font-family:var(--mono);font-size:12px;letter-spacing:2px;text-transform:uppercase;
+  background:none;border:none;border-bottom:3px solid transparent;
+  color:var(--muted);padding:15px 20px;cursor:pointer;transition:.18s;
+}
+.tabbtn:hover{color:var(--text);background:rgba(91,127,166,.08)}
+.tabbtn.active{color:var(--sand);border-bottom-color:var(--sand);background:rgba(201,169,97,.07)}
+
+/* ---------- layout ---------- */
+.wrap{max-width:1320px;margin:0 auto;padding:26px 20px 60px}
+.section{display:none;animation:fadein .35s ease}
+.section.active{display:block}
+@keyframes fadein{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+
+.sec-h{
+  font-family:var(--mono);font-size:15px;letter-spacing:3px;text-transform:uppercase;
+  color:var(--sand);margin:30px 0 14px;display:flex;align-items:center;gap:12px;
+}
+.sec-h::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,var(--line2),transparent)}
+.sec-h:first-child{margin-top:6px}
+
+.panel{
+  background:var(--panel);border:1px solid var(--line);position:relative;
+  padding:20px 22px;margin-bottom:18px;
+}
+.panel::before,.panel::after{
+  content:"";position:absolute;width:12px;height:12px;border:2px solid var(--line2);pointer-events:none;
+}
+.panel::before{top:-1px;left:-1px;border-right:none;border-bottom:none}
+.panel::after{bottom:-1px;right:-1px;border-left:none;border-top:none}
+.panel h3{
+  font-family:var(--mono);font-size:12px;letter-spacing:2.4px;text-transform:uppercase;
+  color:var(--steel);margin-bottom:14px;display:flex;justify-content:space-between;gap:10px;align-items:center;
+}
+.panel h3 .tag{color:var(--dim);font-size:10px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+@media(max-width:900px){.grid2{grid-template-columns:1fr}}
+
+/* ---------- KPI ---------- */
+.kpi{
+  background:linear-gradient(160deg,var(--panel2),var(--panel));
+  border:1px solid var(--line);padding:18px 18px 15px;position:relative;overflow:hidden;
+  transition:.2s;
+}
+.kpi:hover{border-color:var(--steel);transform:translateY(-3px)}
+.kpi .k{font-family:var(--mono);font-size:10px;letter-spacing:2px;color:var(--dim);text-transform:uppercase}
+.kpi .v{font-family:var(--mono);font-size:30px;font-weight:700;color:var(--olive);margin-top:6px;line-height:1.15}
+.kpi .s{font-size:11.5px;color:var(--muted);margin-top:4px}
+.kpi.alt .v{color:var(--sand)}
+.kpi.alt2 .v{color:var(--steel)}
+
+/* ---------- forms ---------- */
+label.fl{display:block;font-family:var(--mono);font-size:10px;letter-spacing:2px;
+  color:var(--dim);text-transform:uppercase;margin-bottom:5px}
+select,input[type=text],input[type=number]{
+  width:100%;background:#0f151d;border:1px solid var(--line2);color:var(--text);
+  font-family:var(--mono);font-size:13px;padding:9px 11px;outline:none;transition:.15s;
+}
+select:focus,input:focus{border-color:var(--steel);box-shadow:0 0 0 3px rgba(91,127,166,.15)}
+input[type=file]{font-family:var(--mono);font-size:12px;color:var(--muted)}
+input[type=file]::file-selector-button{
+  font-family:var(--mono);font-size:11px;letter-spacing:1px;padding:7px 12px;
+  background:var(--panel2);color:var(--text);border:1px solid var(--line2);cursor:pointer;transition:.15s;
+}
+input[type=file]::file-selector-button:hover{border-color:var(--steel);background:#1f2b39}
+.form-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px}
+.seg{display:flex;gap:0;border:1px solid var(--line2)}
+.seg button{
+  flex:1;background:#0f151d;border:none;border-right:1px solid var(--line2);color:var(--muted);
+  font-family:var(--mono);font-size:12px;padding:9px 4px;cursor:pointer;transition:.15s;
+}
+.seg button:last-child{border-right:none}
+.seg button.on{background:var(--steel-d);color:#fff}
+.seg button:hover:not(.on){background:#1a2531}
+
+/* ---------- progress ---------- */
+.prog{height:16px;background:#0f151d;border:1px solid var(--line2);overflow:hidden;position:relative}
+.prog i{display:block;height:100%;width:0%;
+  background:repeating-linear-gradient(45deg,var(--steel-d) 0 10px,var(--steel) 10px 20px);
+  transition:width .4s ease}
+.prog .pct{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  font-family:var(--mono);font-size:10px;color:#fff;text-shadow:0 1px 2px #000}
+
+/* ---------- terminal log ---------- */
+.term{
+  background:#080c11;border:1px solid var(--line);height:230px;overflow-y:auto;
+  font-family:var(--mono);font-size:12px;padding:12px 14px;line-height:1.75;
+}
+.term .t{color:var(--dim)}
+.term .ok{color:var(--olive)}
+.term .warn{color:var(--sand)}
+.term .err{color:#c97a5a}
+.term .info{color:var(--steel)}
+
+/* ---------- tables ---------- */
+table{width:100%;border-collapse:collapse;background:var(--panel);border:1px solid var(--line);font-size:13.5px}
+thead{background:#1a2531}
+th{
+  font-family:var(--mono);font-size:10.5px;letter-spacing:1.6px;text-transform:uppercase;
+  color:var(--sand);text-align:left;padding:11px 13px;border-bottom:1px solid var(--line2);
+}
+td{padding:10px 13px;border-bottom:1px solid var(--line);vertical-align:top}
+tr:last-child td{border-bottom:none}
+tbody tr:hover td{background:rgba(91,127,166,.07)}
+td.num,th.num{font-family:var(--mono)}
+.best td{background:rgba(138,154,91,.10)}
+.best td:first-child{box-shadow:inset 3px 0 0 var(--olive)}
+.tbl-scroll{max-height:430px;overflow-y:auto;border:1px solid var(--line)}
+.tbl-scroll table{border:none}
+
+/* ---------- badges ---------- */
+.badge{
+  display:inline-block;font-family:var(--mono);font-size:10px;letter-spacing:1px;
+  padding:3px 9px;border:1px solid var(--line2);text-transform:uppercase;color:var(--muted);
+}
+.badge.gold{background:rgba(201,169,97,.16);border-color:var(--sand);color:var(--sand)}
+.badge.silver{background:rgba(132,148,166,.14);border-color:#7b8b9c;color:#a9b6c4}
+.badge.bronze{background:rgba(165,106,74,.16);border-color:var(--rust);color:#c9937a}
+.badge.reg{background:rgba(91,127,166,.14);border-color:var(--steel);color:#8fb2d4}
+.badge.clf{background:rgba(138,154,91,.14);border-color:var(--olive);color:#a9bc7d}
+.badge.live{background:rgba(138,154,91,.2);border-color:var(--olive);color:#c3d295}
+
+/* ---------- metric bars ---------- */
+.mbar{display:flex;align-items:center;gap:12px;margin-bottom:11px}
+.mbar .n{width:110px;font-family:var(--mono);font-size:11px;color:var(--muted);text-transform:uppercase}
+.mbar .tr{flex:1;height:18px;background:#0f151d;border:1px solid var(--line);overflow:hidden}
+.mbar .fl{height:100%;width:0;transition:width .9s cubic-bezier(.2,.8,.3,1)}
+.mbar .vv{width:78px;text-align:right;font-family:var(--mono);font-size:12.5px;font-weight:700}
+
+/* ---------- flow ---------- */
+.flow{display:flex;flex-wrap:wrap;gap:6px;align-items:center;justify-content:center}
+.step{
+  font-family:var(--mono);font-size:11px;letter-spacing:1px;text-transform:uppercase;
+  background:var(--panel2);border:1px solid var(--line2);padding:9px 13px;color:var(--text);
+  position:relative;overflow:hidden;
+}
+.step.lit{border-color:var(--olive);color:#dbe6c4}
+.step.lit::after{
+  content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(138,154,91,.22),transparent);
+  animation:slide 1.6s linear infinite;
+}
+@keyframes slide{from{transform:translateX(-100%)}to{transform:translateX(100%)}}
+.arw{color:var(--dim);font-family:var(--mono)}
+
+/* ---------- math ---------- */
+.math{
+  background:var(--panel);border:1px solid var(--line);padding:18px 22px;margin-bottom:12px;
+  font-family:"Cambria Math","Times New Roman",serif;font-size:18px;text-align:center;color:#e6ecf3;
+}
+.math .lb{
+  font-family:var(--mono);font-size:10px;letter-spacing:2.4px;color:var(--steel);
+  text-transform:uppercase;margin-bottom:9px;
+}
+
+/* ---------- cards ---------- */
+.card{
+  background:var(--panel);border:1px solid var(--line);padding:17px 18px;transition:.2s;
+}
+.card:hover{border-color:var(--line2);transform:translateY(-3px);box-shadow:0 10px 26px rgba(0,0,0,.35)}
+.card h4{font-family:var(--mono);font-size:12.5px;letter-spacing:1.6px;color:var(--sand);
+  text-transform:uppercase;margin-bottom:9px}
+.card p{font-size:13.5px;color:var(--muted);margin-bottom:8px}
+.card .res{font-family:var(--mono);font-size:13px;color:var(--olive);border-top:1px dashed var(--line2);
+  padding-top:9px;margin-top:9px}
+.card ul{list-style:none;font-size:13px;color:var(--muted)}
+.card li{padding:4px 0 4px 16px;position:relative}
+.card li::before{content:"▸";position:absolute;left:0;color:var(--steel)}
+
+/* ---------- code ---------- */
+.codebox{position:relative;margin-bottom:16px}
+pre{
+  background:#080c11;border:1px solid var(--line);border-left:3px solid var(--steel-d);
+  padding:15px 16px;overflow-x:auto;font-family:var(--mono);font-size:12.5px;line-height:1.7;
+  color:#c7d3e0;
+}
+pre .cm{color:var(--dim)}
+pre .st{color:var(--olive)}
+pre .kw{color:var(--sand)}
+.copy{
+  position:absolute;top:8px;right:8px;font-family:var(--mono);font-size:10px;
+  background:var(--panel2);border:1px solid var(--line2);color:var(--muted);
+  padding:4px 10px;cursor:pointer;letter-spacing:1px;
+}
+.copy:hover{color:var(--text);border-color:var(--steel)}
+
+/* ---------- charts ---------- */
+.chart{background:var(--paper);border:1px solid var(--line2);padding:8px;transition:.2s}
+.chart:hover{transform:scale(1.012);box-shadow:0 12px 30px rgba(0,0,0,.5)}
+.chart img{width:100%;display:block}
+.cap{font-family:var(--mono);font-size:10.5px;color:var(--dim);letter-spacing:1.4px;
+  text-transform:uppercase;margin-top:7px}
+
+/* ---------- cv diagram ---------- */
+.cvgrid{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-top:10px}
+.cvf{width:78px;height:52px;border:1px solid var(--line2);display:flex;align-items:center;
+  justify-content:center;font-family:var(--mono);font-size:11px;background:#101720;animation:cvpulse 2.5s infinite}
+.cvf:nth-child(1){animation-delay:0s}.cvf:nth-child(2){animation-delay:.5s}
+.cvf:nth-child(3){animation-delay:1s}.cvf:nth-child(4){animation-delay:1.5s}
+.cvf:nth-child(5){animation-delay:2s}
+@keyframes cvpulse{0%,100%{background:#101720;border-color:var(--line2)}
+  20%{background:rgba(91,127,166,.3);border-color:var(--steel)}}
+
+/* ---------- reveal ---------- */
+.rv{opacity:0;transform:translateY(22px);transition:opacity .6s ease,transform .6s ease}
+.rv.in{opacity:1;transform:none}
+
+/* ---------- footer ---------- */
+footer{border-top:1px solid var(--line);background:#0a0e13;padding:34px 20px 26px;margin-top:44px}
+.finner{max-width:1320px;margin:0 auto;display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:26px}
+.fcol h5{font-family:var(--mono);font-size:11px;letter-spacing:2.4px;color:var(--sand);
+  text-transform:uppercase;margin-bottom:11px}
+.fcol a{display:block;color:var(--muted);font-size:13px;padding:4px 0;text-decoration:none;transition:.15s}
+.fcol a:hover{color:var(--steel);padding-left:6px}
+.fbot{max-width:1320px;margin:24px auto 0;border-top:1px solid var(--line);padding-top:16px;
+  display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;
+  font-family:var(--mono);font-size:10.5px;letter-spacing:1.6px;color:var(--dim);text-transform:uppercase}
+
+/* ---------- misc ---------- */
+.note{font-size:12.5px;color:var(--dim);font-style:italic;margin-top:8px}
+.chips{display:flex;gap:7px;flex-wrap:wrap;margin-top:8px}
+.hidden{display:none!important}
+.toast{
+  position:fixed;right:20px;bottom:20px;z-index:99;background:var(--panel2);
+  border:1px solid var(--olive);color:#dbe6c4;font-family:var(--mono);font-size:12.5px;
+  padding:12px 18px;transform:translateY(120%);transition:.35s;max-width:380px;
+}
+.toast.show{transform:none}
+.toast.err{border-color:var(--rust);color:#e0b39c}
+@media(max-width:760px){
+  .header-inner{flex-direction:column}
+  .stamp{display:none}
+  .grid2{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- ================= CLASSIFICATION BAR ================= -->
+<div class="classbar">
+  <span>НЕСЕКРЕТНО</span><span class="sep">//</span>
+  <span>FOR OFFICIAL USE ONLY</span><span class="sep">//</span>
+  <span id="bar-id">ДОКЛАД AIDA-2026-001</span><span class="sep">//</span>
+  <span>НАУЧНАЯ РАБОТА</span>
+</div>
+<div class="march"></div>
+
+<!-- ================= HEADER ================= -->
+<header class="header">
+  <div class="stamp">UNCLASSIFIED</div>
+  <div class="header-inner">
+    <svg class="emblem" viewBox="0 0 100 100" fill="none">
+      <circle class="ring" cx="50" cy="50" r="46" stroke="#3f5f81" stroke-width="1.5"
+              stroke-dasharray="6 7"/>
+      <polygon points="50,14 84,38 71,79 29,79 16,38" stroke="#8a9a5b" stroke-width="2" fill="#141c26"/>
+      <polygon points="50,28 71,43 63,68 37,68 29,43" stroke="#5b7fa6" stroke-width="1.4" fill="none"/>
+      <path d="M35 60 L44 48 L53 55 L65 39" stroke="#c9a961" stroke-width="2.4"
+            stroke-linecap="round" stroke-linejoin="round"/>
+      <circle cx="65" cy="39" r="3" fill="#c9a961"/>
+    </svg>
+    <div class="hd-txt">
+      <div class="doctype">Отчёт о выполнении · раздел 1 из 4</div>
+      <h1><span id="typed"></span><span class="cur">_</span></h1>
+      <p class="subtitle">Автоматизированная система (AutoML) самостоятельно анализирует таблицу данных,
+        определяет тип задачи, предобрабатывает признаки, обучает несколько математических моделей
+        с кросс-валидацией, сравнивает их и выдаёт лучший прогноз — с полным протоколом тренировок.</p>
+      <div class="meta-grid">
+        <div class="meta-cell"><div class="k">Доклад №</div><div class="v" id="m-id">AIDA-2026-001</div></div>
+        <div class="meta-cell"><div class="k">Версия системы</div><div class="v" id="m-ver">—</div></div>
+        <div class="meta-cell"><div class="k">Среда</div><div class="v" id="m-env">—</div></div>
+        <div class="meta-cell"><div class="k">Статус</div><div class="v on"><span class="dot"></span>СИСТЕМА В СЕТИ</div></div>
+        <div class="meta-cell"><div class="k">Дата формирования</div><div class="v" id="m-date">—</div></div>
+        <div class="meta-cell"><div class="k">Репозиторий</div><div class="v" id="m-repo">—</div></div>
+      </div>
+      <div class="hd-actions">
+        <a class="btn primary" id="btn-repo" href="#" target="_blank" rel="noopener">▸ Репозиторий кода</a>
+        <a class="btn" href="#sec-sources">▸ Источники (GitHub)</a>
+        <a class="btn" href="/docs/SCIENTIFIC_PAPER.md" target="_blank">▸ Научная работа</a>
+        <a class="btn" href="/docs/README.md" target="_blank">▸ README</a>
+        <a class="btn" href="/docs/DEFENSE_GUIDE.md" target="_blank">▸ Материалы защиты</a>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- ================= NAV ================= -->
+<nav>
+  <button class="tabbtn active" data-tab="train">01 · Тренировка</button>
+  <button class="tabbtn" data-tab="stats">02 · Статистика</button>
+  <button class="tabbtn" data-tab="how">03 · Как это работает</button>
+  <button class="tabbtn" data-tab="examples">04 · Примеры и задачи</button>
+</nav>
+
+<div class="wrap">
+
+<!-- ======================================================================
+     SECTION 01 — ТРЕНИРОВКА
+     ====================================================================== -->
+<section id="sec-train" class="section active">
+
+  <div class="sec-h">01.1 · Исходные данные</div>
+  <div class="grid2">
+    <div class="panel rv">
+      <h3>Выбор датасета <span class="tag">GET /api/datasets</span></h3>
+      <div class="form-row">
+        <div>
+          <label class="fl">Датасет (CSV из папки data/)</label>
+          <select id="ds-select"></select>
+        </div>
+        <div>
+          <label class="fl">Свой датасет</label>
+          <input type="file" id="ds-file" accept=".csv" style="font-size:12px">
+        </div>
+      </div>
+      <div style="margin-top:12px;display:flex;gap:10px;flex-wrap:wrap">
+        <button class="btn" id="btn-describe">Описать данные</button>
+        <a class="btn" id="ds-download" href="#" target="_blank">Скачать CSV</a>
+      </div>
+      <div class="chips" id="ds-chips"></div>
+      <div class="note">Поддерживаются любые CSV: признаки + целевой столбец.
+        Система сама предложит цель и тип задачи, но вы можете переопределить их ниже.</div>
+    </div>
+
+    <div class="panel rv">
+      <h3>Параметры тренировки <span class="tag">POST /api/train</span></h3>
+      <div class="form-row">
+        <div>
+          <label class="fl">Целевая переменная</label>
+          <select id="p-target"></select>
+        </div>
+        <div>
+          <label class="fl">Тип задачи</label>
+          <select id="p-task">
+            <option value="">auto (определить самому)</option>
+            <option value="regression">регрессия</option>
+            <option value="classification">классификация</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row" style="margin-top:12px">
+        <div>
+          <label class="fl">Кросс-валидация (k-fold)</label>
+          <div class="seg" id="p-cv">
+            <button data-v="3">3</button>
+            <button data-v="5" class="on">5</button>
+            <button data-v="7">7</button>
+            <button data-v="10">10</button>
+          </div>
+        </div>
+        <div>
+          <label class="fl">Доля тестовой выборки</label>
+          <div class="seg" id="p-ts">
+            <button data-v="0.1">10%</button>
+            <button data-v="0.15">15%</button>
+            <button data-v="0.2" class="on">20%</button>
+            <button data-v="0.25">25%</button>
+            <button data-v="0.3">30%</button>
+          </div>
+        </div>
+      </div>
+      <div style="margin-top:16px">
+        <button class="btn olive big" id="btn-train">▶ Начать тренировку</button>
+        <button class="btn" id="btn-experiments">Эксперименты (4 серии)</button>
+        <button class="btn" id="btn-custom">Собственная реализация LR</button>
+      </div>
+      <div class="prog" style="margin-top:14px"><i id="prog-fill"></i><span class="pct" id="prog-pct">0%</span></div>
+    </div>
+  </div>
+
+  <!-- журнал -->
+  <div class="panel rv">
+    <h3>Протокол тренировки <span class="tag">SSE-поток событий</span>
+      <span class="badge" id="train-state">ожидание</span></h3>
+    <div class="term" id="term"><div class="t">— журнал пуст: запустите тренировку —</div></div>
+  </div>
+
+  <!-- описание датасета -->
+  <div class="panel rv hidden" id="ds-info-panel">
+    <h3>Карточка датасета <span class="tag" id="ds-info-name"></span></h3>
+    <div class="grid2">
+      <div>
+        <table id="ds-cols-table">
+          <thead><tr><th>Столбец</th><th>Тип</th><th>Пропуски</th><th>Уникальных</th><th class="num">Мин–Макс / среднее</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <div>
+        <div style="font-family:var(--mono);font-size:10.5px;letter-spacing:2px;color:var(--dim);
+             text-transform:uppercase;margin-bottom:7px">Предпросмотр (8 строк)</div>
+        <div class="tbl-scroll" style="max-height:260px"><table id="ds-head-table"></table></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- результаты -->
+  <div id="result-block" class="hidden">
+    <div class="sec-h">01.2 · Результаты последней тренировки</div>
+    <div class="grid2">
+      <div class="panel rv">
+        <h3>Рейтинг моделей <span class="tag" id="res-meta"></span></h3>
+        <table id="res-table">
+          <thead><tr><th>№</th><th>Модель</th><th class="num">CV-показатель</th><th class="num">± σ</th><th class="num">Время</th></tr></thead>
+          <tbody></tbody>
+        </table>
+        <div class="note" id="res-note"></div>
+      </div>
+      <div class="panel rv">
+        <h3>Тестовая оценка лучшей модели</h3>
+        <div id="res-metrics"></div>
+        <div style="border-top:1px dashed var(--line2);margin-top:14px;padding-top:12px"
+             id="res-summary"></div>
+      </div>
+    </div>
+    <div class="grid2">
+      <div class="panel rv">
+        <h3>Прогноз сохранённой моделью <span class="tag">POST /api/predict</span></h3>
+        <div class="form-row" id="pred-form"></div>
+        <button class="btn primary" id="btn-predict" style="margin-top:12px">Рассчитать прогноз</button>
+        <div id="pred-out" style="margin-top:14px"></div>
+      </div>
+      <div class="panel rv">
+        <h3>Графики прогона <span class="tag">results/01–04</span></h3>
+        <div class="grid2" style="gap:10px" id="run-charts"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- эксперименты -->
+  <div id="exp-block" class="hidden">
+    <div class="sec-h">01.3 · Эксперименты</div>
+    <div class="grid2">
+      <div class="panel rv">
+        <h3>Серия 1 · Влияние доли разбиения</h3>
+        <table id="exp-splits"><thead><tr><th>Разбиение</th><th class="num">Лучший CV</th></tr></thead><tbody></tbody></table>
+        <div class="note" style="margin-top:10px">Проверяется устойчивость выбора модели к пропорциям train/test.</div>
+      </div>
+      <div class="panel rv">
+        <h3>Серия 2 · Сравнение моделей (80/20)</h3>
+        <table id="exp-models"><thead><tr><th>Модель</th><th class="num">CV</th></tr></thead><tbody></tbody></table>
+      </div>
+      <div class="panel rv">
+        <h3>Серия 3 · Дообучение на новых данных</h3>
+        <table id="exp-retrain"><thead><tr><th>Модель</th><th class="num">До</th><th class="num">После</th><th class="num">Δ</th></tr></thead><tbody></tbody></table>
+      </div>
+      <div class="panel rv">
+        <h3>Серия 4 · Валидация прогноза</h3>
+        <div id="exp-sample"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- собственная реализация -->
+  <div id="custom-block" class="hidden">
+    <div class="sec-h">01.4 · Собственная реализация линейной регрессии</div>
+    <div class="panel rv">
+      <h3>Normal Equation vs Gradient Descent vs sklearn <span class="tag">src/custom_linear.py</span></h3>
+      <table id="custom-table">
+        <thead><tr><th>Метод</th><th class="num">RMSE</th><th class="num">R²</th><th class="num">Веса</th><th class="num">Смещение</th></tr></thead>
+        <tbody></tbody>
+      </table>
+      <div class="chips" id="custom-chips" style="margin-top:14px"></div>
+      <div class="note" id="custom-note"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================================================================
+     SECTION 02 — СТАТИСТИКА
+     ====================================================================== -->
+<section id="sec-stats" class="section">
+
+  <div class="sec-h">02.1 · Сводные показатели всех тренировок
+    <button class="btn" id="btn-refresh" style="margin-left:auto">⟳ Обновить</button></div>
+  <div class="grid3 rv" id="kpi-grid">
+    <div class="kpi"><div class="k">Всего тренировок</div><div class="v" data-kpi="total_runs">0</div><div class="s">прогонов в истории</div></div>
+    <div class="kpi alt2"><div class="k">Моделей обучено</div><div class="v" data-kpi="models_trained">0</div><div class="s">всех вариаций моделей</div></div>
+    <div class="kpi alt"><div class="k">Fold-проходов</div><div class="v" data-kpi="cv_folds_total">0</div><div class="s">фолдов кросс-валидации</div></div>
+    <div class="kpi"><div class="k">Время обучения</div><div class="v" data-kpi="time">0</div><div class="s">суммарно по всем прогонам</div></div>
+    <div class="kpi alt"><div class="k">Лучший показатель</div><div class="v" data-kpi="best">—</div><div class="s" id="kpi-best-sub">—</div></div>
+    <div class="kpi alt2"><div class="k">Датасетов</div><div class="v" data-kpi="datasets">0</div><div class="s">CSV-файлов в папке data/</div></div>
+  </div>
+
+  <div class="sec-h">02.2 · Расширенная тренировочная сессия (≥ 40 минут)</div>
+  <div class="panel rv" id="session-panel">
+    <h3>Статус сессии <span class="tag">results/extended_session.json</span>
+      <span class="badge" id="sess-state">нет данных</span></h3>
+    <div id="sess-body" class="note">Файл сессии не найден — запустите <code>python extended_training.py</code>.</div>
+  </div>
+
+  <div class="sec-h">02.3 · Динамика и сводные графики</div>
+  <div class="grid3 rv">
+    <div><div class="chart"><img id="ch05" src="/results/05_training_history.png" alt="Динамика тренировок"></div>
+      <div class="cap">Рис. 05 — динамика качества по прогонам</div></div>
+    <div><div class="chart"><img id="ch06" src="/results/06_model_wins.png" alt="Счёт побед моделей"></div>
+      <div class="cap">Рис. 06 — счёт побед моделей</div></div>
+    <div><div class="chart"><img id="ch07" src="/results/07_learning_curve.png" alt="Кривая обучения"></div>
+      <div class="cap">Рис. 07 — кривая обучения</div></div>
+  </div>
+
+  <div class="sec-h">02.4 · Сравнение моделей по всей истории</div>
+  <div class="panel rv">
+    <h3>Среднее качество, скорость и победы</h3>
+    <table id="model-stat-table">
+      <thead><tr><th>Модель</th><th class="num">Средний CV</th><th class="num">Побед</th><th class="num">Средн. время</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <div class="sec-h">02.5 · Полный журнал тренировок</div>
+  <div class="panel rv">
+    <h3>Все прогоны <span class="tag">GET /api/history</span>
+      <span class="badge" id="hist-count">0</span></h3>
+    <div class="tbl-scroll">
+      <table id="hist-table">
+        <thead><tr><th class="num">ID</th><th>Время</th><th>Датасет</th><th>Задача</th><th>Лучшая модель</th>
+          <th class="num">Показатель</th><th class="num">Сек</th><th>Источник</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ======================================================================
+     SECTION 03 — КАК ЭТО РАБОТАЕТ
+     ====================================================================== -->
+<section id="sec-how" class="section">
+
+  <div class="sec-h">03.1 · Конвейер обработки данных</div>
+  <div class="panel rv">
+    <h3>Полный путь от CSV до прогноза</h3>
+    <div class="flow" id="flow">
+      <div class="step">CSV</div><span class="arw">→</span>
+      <div class="step">Загрузка</div><span class="arw">→</span>
+      <div class="step">Анализ</div><span class="arw">→</span>
+      <div class="step">Предобработка</div><span class="arw">→</span>
+      <div class="step">Тип задачи</div><span class="arw">→</span>
+      <div class="step">Обучение k-fold</div><span class="arw">→</span>
+      <div class="step">Сравнение</div><span class="arw">→</span>
+      <div class="step">Тест</div><span class="arw">→</span>
+      <div class="step">Прогноз</div>
+    </div>
+  </div>
+
+  <div class="grid3 rv">
+    <div class="card"><h4>1 · Загрузка</h4><p>CSV читается через pandas. Проверяются размер, пустые файлы, кодировка UTF-8/BOM.</p></div>
+    <div class="card"><h4>2 · Анализ структуры</h4><p>Число строк и столбцов, типы данных, пропуски в процентах, уникальные значения, статистика min/max/mean/σ.</p></div>
+    <div class="card"><h4>3 · Предобработка</h4><p>Пропуски: медиана (числа) и мода (категории). One-hot кодирование категорий. StandardScaler для чисел. Всё внутри Pipeline — утечки данных исключены.</p></div>
+    <div class="card"><h4>4 · Определение типа задачи</h4><p>Целевая переменная непрерывная → регрессия; мало уникальных значений / 0-1 / текст → классификация. Можно переопределить вручную.</p></div>
+    <div class="card"><h4>5 · Обучение с кросс-валидацией</h4><p>Каждая модель обучается k раз на разных подвыборках. Среднее значение и стандартное отклонение — оценка устойчивости.</p></div>
+    <div class="card"><h4>6 · Сравнение и выбор</h4><p>Побеждает модель с максимальным средним CV-показателем (R² для регрессии, F1/Accuracy для классификации).</p></div>
+    <div class="card"><h4>7 · Финальная оценка</h4><p>Лучшая модель проверяется на отложенной тестовой выборке (20% данных, которые она никогда не видела).</p></div>
+    <div class="card"><h4>8 · Сохранение и прогноз</h4><p>Пайплайн (предобработка + модель) сохраняется в models/best_model.pkl — прогноз по new данным в один вызов.</p></div>
+  </div>
+
+  <div class="sec-h">03.2 · Кросс-валидация k-fold</div>
+  <div class="panel rv">
+    <h3>Схема разбиения (k = 5)</h3>
+    <p style="font-size:13.5px;color:var(--muted)">Данные делятся на 5 частей. Проход 1–5: каждый раз
+      другая часть служит тестом, остальные — обучающей выборкой. Итог — среднее по 5 оценкам
+      и σ (насколько результат стабилен).</p>
+    <div class="cvgrid">
+      <div class="cvf">Фолд 1<br>тест</div><div class="cvf">Фолд 2<br>тест</div>
+      <div class="cvf">Фолд 3<br>тест</div><div class="cvf">Фолд 4<br>тест</div>
+      <div class="cvf">Фолд 5<br>тест</div>
+    </div>
+  </div>
+
+  <div class="sec-h">03.3 · Математический аппарат</div>
+  <div class="grid2">
+    <div>
+      <div class="math rv"><div class="lb">Линейная регрессия</div>y = w·x + b</div>
+      <div class="math rv"><div class="lb">Функция потерь (метод наименьших квадратов)</div>
+        L(w, b) = Σ<sub>i</sub> (y<sub>i</sub> − (w·x<sub>i</sub> + b))² → min</div>
+      <div class="math rv"><div class="lb">Normal Equation (аналитическое решение)</div>
+        w* = (X<sup>T</sup>X)<sup>−1</sup> X<sup>T</sup> y</div>
+      <div class="math rv"><div class="lb">Градиентный спуск</div>
+        w<sub>new</sub> = w − α · ∂L/∂w</div>
+    </div>
+    <div>
+      <div class="math rv"><div class="lb">Полиномиальная регрессия (степень 2)</div>
+        y = w<sub>1</sub>x + w<sub>2</sub>x² + b</div>
+      <div class="math rv"><div class="lb">Логистическая регрессия</div>
+        P(y=1|x) = 1 / (1 + e<sup>−(w<sup>T</sup>x + b)</sup>)</div>
+      <div class="math rv"><div class="lb">Коэффициент детерминации</div>
+        R² = 1 − Σ(y<sub>i</sub> − ŷ<sub>i</sub>)² / Σ(y<sub>i</sub> − ȳ)²</div>
+      <div class="math rv"><div class="lb">F1-score</div>
+        F1 = 2 · Precision · Recall / (Precision + Recall)</div>
+    </div>
+  </div>
+
+  <div class="sec-h">03.4 · Метрики — что означают</div>
+  <div class="grid3 rv">
+    <div class="card"><h4>R²</h4><p>Какую долю дисперсии объясняет модель. 1.0 — идеал, 0.0 — как среднее.</p></div>
+    <div class="card"><h4>MAE</h4><p>Средняя абсолютная ошибка в единицах цели. Прямой «разброс» прогноза.</p></div>
+    <div class="card"><h4>RMSE</h4><p>Корень из MSE — штрафует большие ошибки сильнее, единицы те же, что у цели.</p></div>
+    <div class="card"><h4>Accuracy</h4><p>Доля правильных ответов классификатора из всех.</p></div>
+    <div class="card"><h4>Precision</h4><p>Из предсказанных «положительных» — сколько действительно положительных.</p></div>
+    <div class="card"><h4>Recall</h4><p>Из реальных «положительных» — сколько модель успела найти.</p></div>
+  </div>
+
+  <div class="sec-h">03.5 · Каталог моделей</div>
+  <div class="grid2">
+    <div class="panel rv">
+      <h3>Регрессия <span class="tag">scoring = R²</span></h3>
+      <table><thead><tr><th>Модель</th><th>Суть</th></tr></thead><tbody>
+        <tr><td>Linear Regression</td><td>Прямая y = w·x + b, решение через Normal Equation</td></tr>
+        <tr><td>Polynomial (deg=2)</td><td>Та же модель, но с признаками x² — ловит нелинейность</td></tr>
+        <tr><td>Decision Tree</td><td>Каскад пороговых вопросов по признакам (max_depth=5)</td></tr>
+        <tr><td>Random Forest</td><td>Множество деревьев, усреднение ответов (100 шт.)</td></tr>
+      </tbody></table>
+    </div>
+    <div class="panel rv">
+      <h3>Классификация <span class="tag">scoring = F1 / Accuracy</span></h3>
+      <table><thead><tr><th>Модель</th><th>Суть</th></tr></thead><tbody>
+        <tr><td>Logistic Regression</td><td>Сигмоида от линейной комбинации → вероятность класса</td></tr>
+        <tr><td>Decision Tree</td><td>Дерево решений с ограничением глубины</td></tr>
+        <tr><td>Random Forest</td><td>Ансамбль деревьев, голосование по большинству</td></tr>
+      </tbody></table>
+    </div>
+  </div>
+
+  <div class="sec-h">03.6 · Альтернативная реализация математики</div>
+  <div class="panel rv">
+    <h3>Собственная линейная регрессия <span class="tag">src/custom_linear.py</span></h3>
+    <p style="font-size:13.5px;color:var(--muted)">Реализована с нуля на NumPy двумя способами:
+      аналитически (Normal Equation) и итеративно (градиентный спуск со стандартизацией признаков).
+      Результаты сравниваются с эталоном sklearn — расхождение проверяется на каждом прогоне
+      (раздел 01.4).</p>
+  </div>
+</section>
+
+<!-- ======================================================================
+     SECTION 04 — ПРИМЕРЫ И ЗАДАЧИ
+     ====================================================================== -->
+<section id="sec-examples" class="section">
+
+  <div class="sec-h">04.1 · Как запустить</div>
+  <div class="codebox rv">
+    <button class="copy">Копировать</button>
+<pre><span class="cm"># Windows — один клик: сервер + дашборд в браузере</span>
+start.bat
+
+<span class="cm"># Linux / macOS / вручную</span>
+pip install -r requirements.txt
+python start.py          <span class="cm"># поднимает http://localhost:5000</span>
+
+<span class="cm"># интерактивное CLI-меню (опционально)</span>
+python main.py
+
+<span class="cm"># автотесты всего конвейера</span>
+python test_run.py</pre>
+  </div>
+
+  <div class="sec-h">04.2 · Использование как Python-библиотеки</div>
+  <div class="codebox rv">
+    <button class="copy">Копировать</button>
+<pre><span class="kw">from</span> src.pipeline <span class="kw">import</span> run_training, predict
+
+<span class="cm"># 1. обучить все модели и выбрать лучшую</span>
+result = run_training(dataset=<span class="st">"study_scores.csv"</span>,
+                      cv_folds=<span class="st">5</span>, test_size=<span class="st">0.2</span>)
+<span class="kw">print</span>(result[<span class="st">"best_model"</span>], result[<span class="st">"best_score"</span>])
+
+<span class="cm"># 2. спросить прогноз у сохранённой модели</span>
+<span class="kw">print</span>(predict({<span class="st">"study_hours"</span>: <span class="st">7.0</span>}))
+<span class="cm"># {'prediction': 89.6, 'model': 'Polynomial Regression (degree=2)', ...}</span></pre>
+  </div>
+
+  <div class="sec-h">04.3 · Использование через HTTP API</div>
+  <div class="codebox rv">
+    <button class="copy">Копировать</button>
+<pre><span class="cm"># список датасетов</span>
+curl http://localhost:5000/api/datasets
+
+<span class="cm"># описание датасета</span>
+curl "http://localhost:5000/api/describe?dataset=study_scores.csv"
+
+<span class="cm"># запуск тренировки (поток событий SSE)</span>
+curl -N -X POST http://localhost:5000/api/train \
+     -H "Content-Type: application/json" \
+     -d '{"dataset":"study_scores.csv","cv_folds":5,"test_size":0.2}'
+
+<span class="cm"># статистика всех тренировок</span>
+curl http://localhost:5000/api/stats
+
+<span class="cm"># прогноз</span>
+curl -X POST http://localhost:5000/api/predict \
+     -H "Content-Type: application/json" \
+     -d '{"values":{"study_hours":7.0}}'</pre>
+  </div>
+
+  <div class="sec-h">04.4 · Решённые задачи (фактические результаты)</div>
+  <div class="grid3 rv">
+    <div class="card"><h4>Задача 1 · Регрессия</h4>
+      <ul><li>Данные: study_scores.csv — часы учёбы → оценка</li>
+          <li>62 строки, 1 признак, без пропусков</li>
+          <li>4 модели × 5-fold кросс-валидация</li></ul>
+      <div class="res">Победа: Polynomial Regression (deg=2)<br>
+        CV R² = 0.9983 · тест R² = 0.9964 · RMSE = 0.81</div></div>
+
+    <div class="card"><h4>Задача 2 · Классификация</h4>
+      <ul><li>Данные: student_pass.csv — 4 признака → сдал/не сдал</li>
+          <li>62 строки, бинарная цель pass (0/1)</li>
+          <li>3 модели × 5-fold, scoring = F1</li></ul>
+      <div class="res">Победа: Logistic Regression<br>
+        Accuracy = 92.3% · Precision = 100% · F1 = 0.909</div></div>
+
+    <div class="card"><h4>Задача 3 · Сходимость математики</h4>
+      <ul><li>Собственная LR (Normal Equation) на NumPy</li>
+          <li>Сравнение с эталоном sklearn на тех же данных</li>
+          <li>Проверка максимума |разности| прогнозов</li></ul>
+      <div class="res">Макс. расхождение = 0.000000<br>Формула: score = 7.0454·hours + 40.2404</div></div>
+
+    <div class="card"><h4>Задача 4 · Устойчивость к разбиению</h4>
+      <ul><li>Доли train/test: 70/30, 80/20, 90/10</li>
+          <li>Полный перебор моделей на каждой</li>
+          <li>Проверка: не «повезло» ли с разбиением</li></ul>
+      <div class="res">Полиномиальная регрессия лучшая на всех трёх пропорциях</div></div>
+
+    <div class="card"><h4>Задача 5 · Влияние объёма данных</h4>
+      <ul><li>Обучение на 24 vs 49 примерах</li>
+          <li>Сравнение прироста качества по моделям</li>
+          <li>Кривая обучения: 10 % → 100 % данных</li></ul>
+      <div class="res">Decision Tree +0.0081 · Random Forest +0.0032 ·
+        линейная регрессия уже у предела</div></div>
+
+    <div class="card"><h4>Задача 6 · Масштабирование (сессия ≥ 40 мин)</h4>
+      <ul><li>Синтетические датасеты 2 000–20 000 строк</li>
+          <li>Перебор гиперпараметров RandomForest</li>
+          <li>Проверка устойчивости к random_state</li></ul>
+      <div class="res" id="card-session">См. раздел 02.2 — сессия выполняется в фоне</div></div>
+  </div>
+
+  <div class="sec-h">04.5 · Рекомендованный порядок работы для научной части</div>
+  <div class="grid2">
+    <div class="panel rv">
+      <h3>Практическая часть</h3>
+      <ol style="font-size:13.5px;color:var(--muted);padding-left:20px;line-height:2">
+        <li>Запустить <b>start.bat</b> — откроется дашборд.</li>
+        <li>В разделе «Тренировка» прогнать оба датасета при разных k и долях теста.</li>
+        <li>Загрузить свой CSV и повторить тренировку.</li>
+        <li>Снять все графики 01–07 и таблицы в отчёт.</li>
+        <li>Запустить <code>python extended_training.py</code> — сессия ≥ 40 минут
+            (раздел «Статистика» показывает её статус в реальном времени).</li>
+      </ol>
+    </div>
+    <div class="panel rv">
+      <h3>Теоретическая часть</h3>
+      <ol style="font-size:13.5px;color:var(--muted);padding-left:20px;line-height:2">
+        <li>Раздел 03 — конвейер, формулы, метрики (текст готов к цитированию).</li>
+        <li><a href="/docs/SCIENTIFIC_PAPER.md" target="_blank" style="color:var(--steel)">SCIENTIFIC_PAPER.md</a> —
+            актуализная работа: введение, актуальность, методы, выводы.</li>
+        <li><a href="/docs/DEFENSE_GUIDE.md" target="_blank" style="color:var(--steel)">DEFENSE_GUIDE.md</a> —
+            ответы на вопросы защиты.</li>
+        <li>Таблицы и графики из разделов 01–02 вставить в раздел «Экспериментальные результаты».</li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+</div><!-- /wrap -->
+
+<!-- ================= FOOTER ================= -->
+<footer>
+  <div class="finner">
+    <div class="fcol" id="sec-sources">
+      <h5>Репозиторий</h5>
+      <a id="f-repo" href="#">— репозиторий проекта не задан (REPO_URL) —</a>
+      <a href="/docs/README.md" target="_blank">README.md</a>
+      <a href="/docs/SCIENTIFIC_PAPER.md" target="_blank">Научная работа (SCIENTIFIC_PAPER.md)</a>
+      <a href="/docs/DEFENSE_GUIDE.md" target="_blank">Материалы защиты (DEFENSE_GUIDE.md)</a>
+    </div>
+    <div class="fcol">
+      <h5>Источники кода (GitHub)</h5>
+      <div id="f-refs">загрузка…</div>
+    </div>
+    <div class="fcol">
+      <h5>Разделы дашборда</h5>
+      <a href="#" data-go="train">01 · Тренировка</a>
+      <a href="#" data-go="stats">02 · Статистика</a>
+      <a href="#" data-go="how">03 · Как это работает</a>
+      <a href="#" data-go="examples">04 · Примеры и задачи</a>
+    </div>
+    <div class="fcol">
+      <h5>Технологии</h5>
+      <a>Python + Flask · scikit-learn</a>
+      <a>pandas · NumPy · matplotlib</a>
+      <a>Пайплайн: Pipeline + ColumnTransformer</a>
+      <a id="f-ver">—</a>
+    </div>
+  </div>
+  <div class="fbot">
+    <span>Интеллектуальная система анализа данных · AutoML · научная работа</span>
+    <span>Несекретно // для служебного использования</span>
+    <span id="f-time">—</span>
+  </div>
+</footer>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ======================================================================
+   Утилиты
+   ====================================================================== */
+const $  = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
+const f4 = n => (n === null || n === undefined || Number.isNaN(+n)) ? '—' : (+n).toFixed(4);
+const f2 = n => (n === null || n === undefined) ? '—' : (+n).toFixed(2);
+
+function toast(msg, isErr){
+  const t = $('#toast');
+  t.textContent = msg;
+  t.className = 'toast show' + (isErr ? ' err' : '');
+  clearTimeout(t._h);
+  t._h = setTimeout(() => t.className = 'toast' + (isErr ? ' err' : ''), 4200);
+}
+
+async function jget(url){
+  const r = await fetch(url);
+  const d = await r.json().catch(() => ({}));
+  if(!r.ok) throw new Error(d.error || ('HTTP ' + r.status));
+  return d;
+}
+async function jpost(url, body){
+  const r = await fetch(url, {method:'POST', headers:{'Content-Type':'application/json'},
+                              body: JSON.stringify(body || {})});
+  const d = await r.json().catch(() => ({}));
+  if(!r.ok) throw new Error(d.error || ('HTTP ' + r.status));
+  return d;
+}
+function esc(s){
+  return String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+}
+function fmtDur(sec){
+  sec = +sec || 0;
+  if(sec < 60) return sec.toFixed(1) + ' с';
+  const m = Math.floor(sec / 60), s = Math.round(sec % 60);
+  if(m < 60) return m + ' мин ' + s + ' с';
+  return Math.floor(m / 60) + ' ч ' + (m % 60) + ' мин';
+}
+function fmtTs(ts){
+  if(!ts) return '—';
+  const d = new Date(ts);
+  if(isNaN(d)) return ts;
+  const p = n => String(n).padStart(2, '0');
+  return p(d.getDate()) + '.' + p(d.getMonth()+1) + '.' + d.getFullYear() + ' ' +
+         p(d.getHours()) + ':' + p(d.getMinutes()) + ':' + p(d.getSeconds());
+}
+const taskBadge = t => t === 'regression' ? '<span class="badge reg">регрессия</span>'
+                    : t === 'classification' ? '<span class="badge clf">классификация</span>'
+                    : '<span class="badge">' + esc(t || '—') + '</span>';
+
+/* ======================================================================
+   Навигация по разделам
+   ====================================================================== */
+function showTab(name, noHash){
+  $$('.section').forEach(s => s.classList.remove('active'));
+  $$('.tabbtn').forEach(b => b.classList.toggle('active', b.dataset.tab === name));
+  const el = $('#sec-' + name);
+  if(el){ el.classList.add('active'); window.scrollTo({top: 0, behavior: 'smooth'}); }
+  if(!noHash && location.hash !== '#' + name){
+    try{ history.replaceState(null, '', '#' + name); }catch(_){ location.hash = name; }
+  }
+  if(name === 'stats') loadStats();
+  // показать блоки, уже находящиеся в вьюпорте
+  setTimeout(() => $$('.section.active .rv').forEach(e => {
+    const r = e.getBoundingClientRect();
+    if(r.top < innerHeight && r.bottom > 0) e.classList.add('in');
+  }), 60);
+}
+$$('.tabbtn').forEach(b => b.addEventListener('click', () => showTab(b.dataset.tab)));
+$$('[data-go]').forEach(a => a.addEventListener('click', e => { e.preventDefault(); showTab(a.dataset.go); }));
+
+/* ======================================================================
+   Системная информация
+   ====================================================================== */
+async function loadSystem(){
+  try{
+    const s = await jget('/api/system');
+    $('#m-id').textContent    = s.report_id;
+    $('#m-ver').textContent   = 'v' + s.version;
+    $('#m-env').textContent   = 'Python ' + s.python + ' · sklearn ' + s.sklearn;
+    $('#m-date').textContent  = fmtTs(s.server_time);
+    $('#bar-id').textContent  = 'ДОКЛАД ' + s.report_id;
+    $('#f-ver').textContent   = 'Flask ' + s.flask + ' · pandas ' + s.pandas + ' · NumPy ' + s.numpy;
+    $('#f-time').textContent  = 'Сформировано: ' + fmtTs(s.server_time);
+
+    const repo = s.repo_url;
+    if(repo){
+      $('#m-repo').innerHTML = '<a href="' + esc(repo) + '" target="_blank" style="color:var(--sand)">' +
+                               esc(repo.replace('https://', '')) + '</a>';
+      $('#btn-repo').href = repo;
+      $('#f-repo').href = repo;
+      $('#f-repo').textContent = repo;
+    }else{
+      $('#m-repo').textContent = 'см. источники ниже';
+      $('#btn-repo').classList.add('hidden');   // ссылки нет — кнопку не показываем
+      $('#f-repo').textContent = 'задайте REPO_URL в server.py — ссылка появится здесь';
+    }
+    $('#f-refs').innerHTML = (s.references || []).map(r =>
+      '<a href="' + esc(r.url) + '" target="_blank" rel="noopener">' + esc(r.name) + '</a>').join('');
+  }catch(e){
+    toast('Системная информация недоступна: ' + e.message, true);
+  }
+}
+
+/* ======================================================================
+   Датасеты
+   ====================================================================== */
+let DATASETS = [];
+
+async function loadDatasets(prefer){
+  try{
+    const d = await jget('/api/datasets');
+    DATASETS = d.datasets || [];
+    const sel = $('#ds-select');
+    sel.innerHTML = DATASETS.map(x =>
+      '<option value="' + esc(x.name) + '">' + esc(x.name) + ' · ' + x.rows + '×' +
+      x.columns + ' · ' + (x.task_hint || '?') + '</option>').join('');
+    if(prefer) sel.value = prefer;
+    if(!$('#p-target').options.length || $('#p-target').options.length === 1){
+      describeSelected();
+    }
+  }catch(e){ toast(e.message, true); }
+}
+
+async function describeSelected(){
+  const name = $('#ds-select').value;
+  if(!name) return;
+  try{
+    const d = await jget('/api/describe?dataset=' + encodeURIComponent(name));
+    $('#ds-download').href = '/data/' + encodeURIComponent(name);
+
+    // чипы
+    $('#ds-chips').innerHTML =
+      '<span class="badge">' + d.rows + ' строк</span>' +
+      '<span class="badge">' + d.columns_count + ' столбцов</span>' +
+      '<span class="badge">пропусков: ' + d.missing_total + '</span>' +
+      '<span class="badge reg">цель: ' + esc(d.suggested_target) + '</span>' +
+      '<span class="badge clf">' + esc(d.detected_task) + '</span>';
+
+    // таблица столбцов
+    $('#ds-cols-table tbody').innerHTML = d.columns.map(c => {
+      const stat = c.role === 'numeric'
+        ? f2(c.min) + ' … ' + f2(c.max) + ' / ' + f2(c.mean)
+        : (c.top && c.top[0] ? Object.keys(c.top[0]).slice(0,3).join(', ') : '—');
+      return '<tr><td>' + esc(c.name) + '</td><td>' + esc(c.dtype) + '</td>' +
+             '<td>' + c.missing + (c.missing_pct ? ' (' + c.missing_pct + '%)' : '') + '</td>' +
+             '<td class="num">' + c.unique + '</td><td class="num">' + esc(stat) + '</td></tr>';
+    }).join('');
+
+    // предпросмотр
+    const cols = Object.keys(d.head);
+    const nRows = cols.length ? d.head[cols[0]].length : 0;
+    let headHtml = '<thead><tr>' + cols.map(c => '<th>' + esc(c) + '</th>').join('') + '</tr></thead>';
+    let bodyHtml = '<tbody>';
+    for(let i = 0; i < nRows; i++){
+      bodyHtml += '<tr>' + cols.map(c => '<td class="num">' + esc(d.head[c][i]) + '</td>').join('') + '</tr>';
+    }
+    bodyHtml += '</tbody>';
+    $('#ds-head-table').innerHTML = headHtml + bodyHtml;
+
+    $('#ds-info-name').textContent = name;
+    $('#ds-info-panel').classList.remove('hidden');
+
+    // цель / тип
+    const tgt = $('#p-target');
+    const prev = tgt.value;
+    tgt.innerHTML = d.columns.map(c =>
+      '<option value="' + esc(c.name) + '">' + esc(c.name) + ' (' + esc(c.dtype) + ')</option>').join('');
+    tgt.value = d.suggested_target || d.columns[d.columns.length - 1].name;
+    if([...tgt.options].some(o => o.value === prev)) tgt.value = prev;
+    $('#p-task').value = d.detected_task || '';
+    refreshPredictMetaHint(d);
+    return d;
+  }catch(e){
+    toast('Ошибка описания датасета: ' + e.message, true);
+  }
+}
+function refreshPredictMetaHint(){}
+
+$('#ds-select').addEventListener('change', describeSelected);
+$('#btn-describe').addEventListener('click', describeSelected);
+$('#ds-file').addEventListener('change', async e => {
+  const f = e.target.files[0];
+  if(!f) return;
+  const fd = new FormData();
+  fd.append('file', f);
+  try{
+    const r = await fetch('/api/upload', {method:'POST', body: fd});
+    const d = await r.json();
+    if(!r.ok) throw new Error(d.error || 'upload failed');
+    toast(d.message);
+    await loadDatasets(d.dataset);
+    describeSelected();
+  }catch(err){ toast(err.message, true); }
+  e.target.value = '';
+});
+
+/* ======================================================================
+   Сегменты (cv / test size)
+   ====================================================================== */
+function segValue(id){ return $('#' + id + ' button.on').dataset.v; }
+$$('.seg').forEach(seg => seg.addEventListener('click', e => {
+  const b = e.target.closest('button');
+  if(!b) return;
+  [...seg.children].forEach(x => x.classList.remove('on'));
+  b.classList.add('on');
+}));
+
+/* ======================================================================
+   Журнал тренировки
+   ====================================================================== */
+function logLine(text, cls){
+  const term = $('#term');
+  if(term.textContent.includes('— журнал пуст')) term.innerHTML = '';
+  const t = new Date();
+  const p = n => String(n).padStart(2, '0');
+  const time = p(t.getHours()) + ':' + p(t.getMinutes()) + ':' + p(t.getSeconds());
+  const div = document.createElement('div');
+  div.innerHTML = '<span class="t">[' + time + ']</span> <span class="' + (cls || '') + '">' +
+                  esc(text) + '</span>';
+  term.appendChild(div);
+  term.scrollTop = term.scrollHeight;
+}
+function setProgress(pct){
+  pct = Math.max(0, Math.min(100, Math.round(pct)));
+  $('#prog-fill').style.width = pct + '%';
+  $('#prog-pct').textContent = pct + '%';
+}
+function setTrainState(txt, live){
+  const el = $('#train-state');
+  el.textContent = txt;
+  el.className = 'badge' + (live ? ' live' : '');
+}
+
+/* ======================================================================
+   Тренировка (SSE через fetch)
+   ====================================================================== */
+async function stream(url, payload, onEvent){
+  const resp = await fetch(url, {method:'POST', headers:{'Content-Type':'application/json'},
+                                 body: JSON.stringify(payload)});
+  if(!resp.ok){
+    const d = await resp.json().catch(() => ({}));
+    throw new Error(d.error || ('HTTP ' + resp.status));
+  }
+  const reader = resp.body.getReader();
+  const dec = new TextDecoder();
+  let buf = '';
+  while(true){
+    const {value, done} = await reader.read();
+    if(done) break;
+    buf += dec.decode(value, {stream: true});
+    let idx;
+    while((idx = buf.indexOf('\n\n')) >= 0){
+      const chunk = buf.slice(0, idx);
+      buf = buf.slice(idx + 2);
+      const line = chunk.split('\n').find(l => l.startsWith('data: '));
+      if(line){
+        try{ onEvent(JSON.parse(line.slice(6))); }catch(_){}
+      }
+    }
+  }
+}
+
+$('#btn-train').addEventListener('click', async () => {
+  const dataset = $('#ds-select').value;
+  if(!dataset){ toast('Выберите датасет', true); return; }
+  const btn = $('#btn-train');
+  btn.disabled = true;
+  setTrainState('обучение…', true);
+  setProgress(0);
+  logLine('Запуск тренировки: ' + dataset, 'info');
+
+  const payload = {
+    dataset,
+    target: $('#p-target').value || null,
+    task: $('#p-task').value || null,
+    cv_folds: +segValue('p-cv'),
+    test_size: +segValue('p-ts'),
+    source: 'dashboard'
+  };
+
+  try{
+    let last = null;
+    await stream('/api/train', payload, ev => {
+      if(ev.progress !== undefined) setProgress(ev.progress);
+      const cls = ev.step === 'error' ? 'err'
+                : ev.step === 'best' || ev.step === 'done' ? 'ok'
+                : ev.step === 'model' ? 'info' : '';
+      if(ev.msg) logLine(ev.msg, cls);
+      if(ev.step === 'done') last = ev.result;
+      if(ev.step === 'error') toast(ev.msg, true);
+    });
+    if(last){
+      renderResults(last);
+      setTrainState('готово', false);
+      toast('Тренировка #' + last.id + ' завершена: ' + bestScoreLabel(last));
+      loadStats();
+    }else{
+      setTrainState('ошибка', false);
+    }
+  }catch(e){
+    setTrainState('ошибка', false);
+    logLine('ОШИБКА: ' + e.message, 'err');
+    toast(e.message, true);
+  }finally{
+    btn.disabled = false;
+  }
+});
+
+function bestScoreLabel(r){
+  return (r.scoring || 'CV').toUpperCase() + ' = ' + f4(r.best_score);
+}
+
+/* ======================================================================
+   Рендер результатов
+   ====================================================================== */
+const medal = i => i === 0 ? '<span class="badge gold">★ лучшая</span>'
+                : i === 1 ? '<span class="badge silver">2</span>'
+                : i === 2 ? '<span class="badge bronze">3</span>'
+                : '<span class="badge">' + (i + 1) + '</span>';
+
+function renderResults(r){
+  $('#result-block').classList.remove('hidden');
+
+  $('#res-meta').textContent = r.dataset + ' · ' + r.target + ' · ' + r.task +
+    ' · ' + r.cv_folds + '-fold · тест ' + Math.round((1 - r.test_size) * 100) + '/' +
+    Math.round(r.test_size * 100) + ' · ' + r.duration_sec + ' с';
+
+  $('#res-table tbody').innerHTML = r.models.map((m, i) =>
+    '<tr class="' + (i === 0 ? 'best' : '') + '">' +
+    '<td class="num">' + medal(i) + '</td>' +
+    '<td>' + esc(m.name) + '</td>' +
+    '<td class="num"><b>' + f4(m.cv_mean) + '</b></td>' +
+    '<td class="num">± ' + f4(m.cv_std) + '</td>' +
+    '<td class="num">' + f2(m.fit_seconds) + ' с</td></tr>').join('');
+
+  $('#res-note').innerHTML = 'Скоринг: <b>' + r.scoring + '</b> · прогоны: ' +
+    r.rows + ' строк, train ' + r.n_train + ' / test ' + r.n_test +
+    ' · источник: ' + esc(r.source) + ' · #' + r.id;
+
+  // метрики
+  const m = r.test_metrics || {};
+  const bars = [];
+  const push = (name, val, color, pct) => {
+    if(val === undefined || val === null) return;
+    bars.push('<div class="mbar"><span class="n">' + name + '</span>' +
+      '<div class="tr"><div class="fl" style="width:' + Math.max(2, Math.min(100, pct)) +
+      '%;background:' + color + '"></div></div>' +
+      '<span class="vv" style="color:' + color + '">' + f4(val) + '</span></div>');
+  };
+  if(r.task === 'regression'){
+    push('R²', m.R2, 'var(--olive)', (m.R2 || 0) * 100);
+    push('MAE', m.MAE, 'var(--sand)', 100 - Math.min(100, (m.MAE || 0) * 20));
+    push('RMSE', m.RMSE, 'var(--steel)', 100 - Math.min(100, (m.RMSE || 0) * 20));
+    push('MSE', m.MSE, 'var(--rust)', 100 - Math.min(100, (m.MSE || 0) * 20));
+  }else{
+    push('Accuracy', m.Accuracy, 'var(--olive)', (m.Accuracy || 0) * 100);
+    push('Precision', m.Precision, 'var(--steel)', (m.Precision || 0) * 100);
+    push('Recall', m.Recall, 'var(--sand)', (m.Recall || 0) * 100);
+    push('F1', m.F1, 'var(--rust)', (m.F1 || 0) * 100);
+  }
+  $('#res-metrics').innerHTML = bars.join('') || '<div class="note">метрики недоступны</div>';
+
+  $('#res-summary').innerHTML =
+    '<div style="font-family:var(--mono);font-size:12px;color:var(--muted);line-height:2">' +
+    '▸ Лучшая модель: <b style="color:var(--sand)">' + esc(r.best_model) + '</b><br>' +
+    '▸ CV-показатель: <b style="color:var(--olive)">' + bestScoreLabel(r) + '</b><br>' +
+    '▸ Время прогона: ' + r.duration_sec + ' с</div>';
+
+  // графики прогона
+  const charts = r.charts && r.charts.length ? r.charts : [];
+  $('#run-charts').innerHTML = charts.length
+    ? charts.map(c => '<div><div class="chart"><img src="/results/' + esc(c) +
+        '?v=' + Date.now() + '" alt="' + esc(c) + '"></div><div class="cap">' +
+        esc(c) + '</div></div>').join('')
+    : '<div class="note">графики не сохранены</div>';
+
+  buildPredictForm();
+}
+
+function buildPredictForm(){
+  jget('/api/predict-meta').then(meta => {
+    if(!meta || !meta.features){ $('#pred-form').innerHTML = '<div class="note">Сначала обучите модель.</div>'; return; }
+    const dt = meta.feature_dtypes || {};
+    $('#pred-form').innerHTML = meta.features.map(f => {
+      const numeric = String(dt[f] || 'float64').indexOf('float') === 0 ||
+                      String(dt[f] || '').indexOf('int') === 0 ||
+                      String(dt[f] || '').indexOf('uint') === 0;
+      return '<div><label class="fl">' + esc(f) +
+        (numeric ? '' : ' <span style="color:var(--sand)">(текст)</span>') + '</label>' +
+        '<input type="' + (numeric ? 'number' : 'text') + '" step="any" data-f="' +
+        esc(f) + '" data-num="' + (numeric ? '1' : '0') + '" placeholder="' + esc(f) + '"></div>';
+    }).join('');
+    $('#pred-out').innerHTML = '<div class="note">Модель: ' + esc(meta.model) + ' · цель: ' +
+      esc(meta.target) + ' (' + esc(meta.task) + ')</div>';
+  }).catch(() => {
+    $('#pred-form').innerHTML = '<div class="note">Модель ещё не обучена.</div>';
+  });
+}
+
+$('#btn-predict').addEventListener('click', async () => {
+  const values = {};
+  $$('#pred-form input').forEach(i => {
+    if(i.value === '') return;
+    values[i.dataset.f] = (i.dataset.num === '0') ? i.value : +i.value;
+  });
+  if(!Object.keys(values).length){ toast('Заполните признаки', true); return; }
+  try{
+    const r = await jpost('/api/predict', {values});
+    let html = '<div class="panel" style="margin:0;background:var(--panel2)">' +
+      '<div style="font-family:var(--mono);font-size:11px;color:var(--dim);letter-spacing:2px">' +
+      'РЕЗУЛЬТАТ ПРОГНОЗА</div>';
+    if(r.task === 'classification'){
+      html += '<div style="font-size:34px;font-weight:800;color:var(--olive);margin-top:6px">' +
+              esc(String(r.predicted_class)) + '</div>';
+      if(r.proba){
+        html += '<div style="margin-top:8px;font-family:var(--mono);font-size:12px;color:var(--muted)">' +
+          Object.entries(r.proba).map(([k, v]) => 'P(' + k + ') = ' + (+v).toFixed(3)).join(' · ') + '</div>';
+      }
+    }else{
+      html += '<div style="font-size:34px;font-weight:800;color:var(--sand);margin-top:6px">' +
+              f2(r.prediction) + '</div>';
+    }
+    html += '<div class="note">модель: ' + esc(r.model) + ' · датасет: ' + esc(r.dataset) + '</div></div>';
+    $('#pred-out').innerHTML = html;
+  }catch(e){ toast(e.message, true); }
+});
+
+/* ======================================================================
+   Эксперименты
+   ====================================================================== */
+$('#btn-experiments').addEventListener('click', async () => {
+  const btn = $('#btn-experiments');
+  btn.disabled = true;
+  setTrainState('эксперименты…', true);
+  logLine('Запуск 4 серий экспериментов…', 'info');
+  try{
+    const d = await jpost('/api/experiments', {dataset: $('#ds-select').value,
+                                               target: $('#p-target').value || null});
+    const r = d.result || {};
+    $('#exp-block').classList.remove('hidden');
+    setProgress(100);
+
+    $('#exp-splits tbody').innerHTML = Object.entries(r)
+      .filter(([k]) => k.startsWith('split_'))
+      .map(([k, v]) => '<tr><td>' + esc(k.replace('split_', '')) + '</td><td class="num"><b>' +
+        f4(v) + '</b></td></tr>').join('');
+
+    const mc = r.model_comparison || {};
+    const mcRows = Object.entries(mc).sort((a, b) => b[1] - a[1]);
+    $('#exp-models tbody').innerHTML = mcRows.map(([k, v], i) =>
+      '<tr class="' + (i === 0 ? 'best' : '') + '"><td>' + esc(k) + '</td><td class="num"><b>' +
+      f4(v) + '</b></td></tr>').join('') || '<tr><td colspan="2">нет данных</td></tr>';
+
+    const rt = r.retraining || {};
+    const olds = rt.old_results || {}, news = rt.new_results || {};
+    $('#exp-retrain tbody').innerHTML = Object.keys(olds).map(k => {
+      const o = olds[k], n = news[k];
+      const dlt = (n !== undefined) ? (n - o) : null;
+      const col = dlt === null ? 'var(--muted)' : dlt > 0.0001 ? 'var(--olive)' :
+                  dlt < -0.0001 ? 'var(--rust)' : 'var(--muted)';
+      return '<tr><td>' + esc(k) + '</td><td class="num">' + f4(o) + '</td>' +
+             '<td class="num">' + f4(n) + '</td>' +
+             '<td class="num" style="color:' + col + ';font-weight:700">' +
+             (dlt === null ? '—' : (dlt >= 0 ? '+' : '') + f4(dlt)) + '</td></tr>';
+    }).join('');
+
+    const ps = r.prediction_sample;
+    $('#exp-sample').innerHTML = ps ?
+      '<div style="font-family:var(--mono);font-size:13px;line-height:2.1">' +
+      '▸ Факт: <b style="color:var(--olive)">' + f2(ps.actual) + '</b><br>' +
+      '▸ Прогноз: <b style="color:var(--sand)">' + f2(ps.predicted) + '</b><br>' +
+      '▸ Абс. ошибка: <b>' + f4(ps.error) + '</b></div>' : 'нет данных';
+
+    const tm = r.test_metrics;
+    if(tm){
+      $('#exp-sample').innerHTML += '<div style="border-top:1px dashed var(--line2);margin-top:10px;' +
+        'padding-top:10px;font-family:var(--mono);font-size:12px;color:var(--muted)">' +
+        Object.entries(tm).map(([k, v]) => k + ' = ' + f4(v)).join('<br>') + '</div>';
+    }
+    logLine('Эксперименты завершены (4 серии)', 'ok');
+    setTrainState('готово', false);
+    $('#exp-block').scrollIntoView({behavior: 'smooth', block: 'start'});
+    toast('Эксперименты завершены');
+  }catch(e){
+    setTrainState('ошибка', false);
+    logLine('ОШИБКА: ' + e.message, 'err');
+    toast(e.message, true);
+  }finally{ btn.disabled = false; }
+});
+
+/* ======================================================================
+   Собственная реализация LR
+   ====================================================================== */
+$('#btn-custom').addEventListener('click', async () => {
+  const btn = $('#btn-custom');
+  btn.disabled = true;
+  try{
+    const ds = $('#ds-select').value;
+    const tgt = $('#p-target').value;
+    const r = await jget('/api/custom-linear?dataset=' + encodeURIComponent(ds) +
+                         '&target=' + encodeURIComponent(tgt || ''));
+    $('#custom-block').classList.remove('hidden');
+    $('#custom-table tbody').innerHTML = r.rows.map(x =>
+      '<tr class="' + (x.method.indexOf('Sklearn') === 0 ? 'best' : '') + '">' +
+      '<td>' + esc(x.method) + '</td>' +
+      '<td class="num">' + f4(x.rmse) + '</td>' +
+      '<td class="num"><b>' + f4(x.r2) + '</b></td>' +
+      '<td class="num">[' + x.weights.map(w => (+w).toFixed(4)).join(', ') + ']</td>' +
+      '<td class="num">' + (+x.bias).toFixed(4) + '</td></tr>').join('');
+    $('#custom-chips').innerHTML =
+      '<span class="badge ' + (r.max_diff_normal_equation < 1e-6 ? 'clf' : '') + '">' +
+      'Δ(Normal Eq vs sklearn) = ' + r.max_diff_normal_equation.toExponential(2) + '</span>' +
+      '<span class="badge ' + (r.max_diff_gradient_descent < 0.01 ? 'clf' : '') + '">' +
+      'Δ(Grad Desc vs sklearn) = ' + r.max_diff_gradient_descent.toExponential(2) + '</span>';
+    $('#custom-note').textContent = 'Признак: ' + r.feature + ' · формула: ' + r.formula;
+    $('#custom-block').scrollIntoView({behavior: 'smooth', block: 'start'});
+    logLine('Собственная реализация LR проверена: ' + r.formula, 'ok');
+  }catch(e){ toast(e.message, true); }
+  finally{ btn.disabled = false; }
+});
+
+/* ======================================================================
+   Статистика
+   ====================================================================== */
+function animateNumber(el, to, suffix, decimals){
+  const from = 0, dur = 900, t0 = performance.now();
+  const isInt = decimals === undefined;
+  function tick(t){
+    const k = Math.min(1, (t - t0) / dur);
+    const v = from + (to - from) * (1 - Math.pow(1 - k, 3));
+    el.textContent = (isInt ? Math.round(v).toLocaleString('ru-RU')
+                            : v.toFixed(decimals)) + (suffix || '');
+    if(k < 1) requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+}
+
+async function loadStats(){
+  try{
+    const s = await jget('/api/stats');
+
+    const set = (key, val, suffix, dec) => {
+      const el = document.querySelector('[data-kpi="' + key + '"]');
+      if(!el) return;
+      if(typeof val === 'number') animateNumber(el, val, suffix, dec);
+      else el.textContent = val;
+    };
+    set('total_runs', s.total_runs || 0);
+    set('models_trained', s.models_trained || 0);
+    set('cv_folds_total', s.cv_folds_total || 0);
+    set('time', Math.round((s.total_train_time_sec || 0) / 60), ' мин');
+    set('datasets', (typeof s.data_files === 'number') ? s.data_files
+                     : (s.datasets || []).length);
+    if(s.best_overall){
+      set('best', s.best_overall.score, '', 4);
+      $('#kpi-best-sub').textContent = s.best_overall.model + ' · ' + s.best_overall.dataset;
+    }else{
+      const el = document.querySelector('[data-kpi="best"]');
+      if(el) el.textContent = '—';
+    }
+
+    // средние по моделям
+    const avg = s.avg_score_by_model || {}, wins = s.winners || {}, fit = s.avg_fit_seconds_by_model || {};
+    const names = Object.keys(avg).sort((a, b) => avg[b] - avg[a]);
+    $('#model-stat-table tbody').innerHTML = names.map((n, i) =>
+      '<tr class="' + (i === 0 ? 'best' : '') + '"><td>' + esc(n) + '</td>' +
+      '<td class="num"><b>' + f4(avg[n]) + '</b></td>' +
+      '<td class="num">' + (wins[n] || 0) + '</td>' +
+      '<td class="num">' + (fit[n] !== undefined ? f2(fit[n]) + ' с' : '—') + '</td></tr>'
+    ).join('') || '<tr><td colspan="4">нет данных</td></tr>';
+
+    renderSession(s.session);
+
+    // журнал
+    const h = await jget('/api/history?limit=500');
+    $('#hist-count').textContent = h.total;
+    $('#hist-table tbody').innerHTML = h.runs.map(r =>
+      '<tr><td class="num">#' + r.id + '</td>' +
+      '<td class="num">' + fmtTs(r.ts) + '</td>' +
+      '<td>' + esc(r.dataset) + '</td>' +
+      '<td>' + taskBadge(r.task) + '</td>' +
+      '<td>' + esc(r.best_model || '—') + '</td>' +
+      '<td class="num" style="color:var(--olive)"><b>' + f4(r.best_score) + '</b></td>' +
+      '<td class="num">' + f2(r.duration_sec) + '</td>' +
+      '<td><span class="badge">' + esc(r.source || '—') + '</span></td></tr>'
+    ).join('') || '<tr><td colspan="8">пока нет прогонов</td></tr>';
+
+    // графики с cache-bust
+    const v = Date.now();
+    ['ch05', 'ch06', 'ch07'].forEach(id => {
+      const img = $('#' + id);
+      if(img){
+        const base = img.src.split('?')[0];
+        img.src = base + '?v=' + v;
+        img.onerror = () => { img.parentElement.style.opacity = .35; };
+        img.onload  = () => { img.parentElement.style.opacity = 1; };
+      }
+    });
+  }catch(e){
+    toast('Статистика: ' + e.message, true);
+  }
+}
+
+function renderSession(sess){
+  const st = $('#sess-state'), body = $('#sess-body');
+  if(!sess){
+    st.textContent = 'нет данных';
+    st.className = 'badge';
+    body.innerHTML = '<div class="note">Файл сессии не найден — запустите ' +
+      '<code>python extended_training.py</code> (сессия ≥ 40 минут).</div>';
+    return;
+  }
+  const running = sess.status === 'running';
+  st.textContent = running ? 'выполняется' : (sess.status === 'finished' ? 'завершена' : 'прервана');
+  st.className = 'badge ' + (running ? 'live' : (sess.status === 'finished' ? 'clf' : ''));
+
+  const elapsed = sess.elapsed_sec || 0;
+  const target = sess.target_sec || 2400;
+  const pct = Math.min(100, (elapsed / target) * 100);
+
+  const runs = (sess.runs || []).slice(-8).reverse();
+  body.innerHTML =
+    '<div class="grid3" style="margin-bottom:14px">' +
+      '<div class="kpi"><div class="k">Непрерывное обучение</div><div class="v">' +
+        (elapsed / 60).toFixed(1) + '<span style="font-size:15px"> мин</span></div>' +
+        '<div class="s">цель — не менее ' + (sess.min_minutes || 40) + ' мин</div></div>' +
+      '<div class="kpi alt2"><div class="k">Прогонов в сессии</div><div class="v">' +
+        (sess.runs_completed || 0) + '</div><div class="s">циклов: ' +
+        (sess.cycles_completed || 0) + '</div></div>' +
+      '<div class="kpi alt"><div class="k">Лучший за сессию</div><div class="v" style="font-size:24px">' +
+        (sess.best_score !== null && sess.best_score !== undefined ? f4(sess.best_score) : '—') +
+        '</div><div class="s">' + esc(sess.best_model || '—') + '</div></div>' +
+    '</div>' +
+    '<div class="prog"><i style="width:' + pct.toFixed(1) + '%"></i>' +
+      '<span class="pct">' + pct.toFixed(0) + '% · ' + (elapsed / 60).toFixed(1) + ' / ' +
+      (target / 60).toFixed(0) + ' мин</span></div>' +
+    '<div class="chips" style="margin-top:12px">' +
+      (sess.phases || []).map(p => '<span class="badge">' + esc(p) + '</span>').join('') + '</div>' +
+    (runs.length ?
+      '<div class="tbl-scroll" style="margin-top:14px;max-height:240px"><table>' +
+      '<thead><tr><th>Фаза</th><th>Датасет</th><th>Лучшая модель</th><th class="num">Показатель</th>' +
+      '<th class="num">Сек</th></tr></thead><tbody>' +
+      runs.map(r => '<tr><td style="font-size:12px">' + esc(r.phase || '—') + '</td>' +
+        '<td>' + esc(r.dataset) + '</td><td>' + esc(r.best_model || '—') + '</td>' +
+        '<td class="num" style="color:var(--olive)">' +
+        (r.best_score !== undefined ? f4(r.best_score) : '—') + '</td>' +
+        '<td class="num">' + f2(r.duration_sec) + '</td></tr>').join('') +
+      '</tbody></table></div>' : '') +
+    (sess.notes && sess.notes.length ?
+      '<div class="note">' + esc(sess.notes[sess.notes.length - 1]) + '</div>' : '');
+
+  // карточка в разделе примеров
+  const card = $('#card-session');
+  if(card){
+    card.innerHTML = 'Сессия: <b>' + (sess.runs_completed || 0) + '</b> прогонов за <b>' +
+      (elapsed / 60).toFixed(1) + ' мин</b>, лучший показатель <b>' +
+      (sess.best_score != null ? f4(sess.best_score) : '—') + '</b> (' +
+      esc(sess.best_model || '—') + ')';
+  }
+}
+
+$('#btn-refresh').addEventListener('click', () => { loadStats(); toast('Статистика обновлена'); });
+
+// фоновый опрос сессии (чтобы раздел 02.2 обновлялся в реальном времени)
+setInterval(async () => {
+  try{
+    const d = await jget('/api/session');
+    if($('#sec-stats').classList.contains('active')) renderSession(d.session);
+    else if(d.session) renderSession(d.session);
+  }catch(_){}
+}, 7000);
+
+/* ======================================================================
+   Копирование кода
+   ====================================================================== */
+$$('.copy').forEach(btn => btn.addEventListener('click', () => {
+  const pre = btn.parentElement.querySelector('pre');
+  navigator.clipboard.writeText(pre.innerText).then(() => {
+    btn.textContent = 'Скопировано';
+    setTimeout(() => btn.textContent = 'Копировать', 1600);
+  }).catch(() => toast('Не удалось скопировать', true));
+}));
+
+/* ======================================================================
+   Анимации
+   ====================================================================== */
+// появление блоков
+const io = new IntersectionObserver(entries => {
+  entries.forEach(e => { if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); } });
+}, {threshold: .12});
+$$('.rv').forEach(el => io.observe(el));
+
+// «печатающийся» заголовок
+(function typeTitle(){
+  const text = 'Интеллектуальная система анализа данных';
+  const el = $('#typed');
+  let i = 0;
+  const alphabet = 'АБВГДЕЖЗИКЛМНОПРСТУФХЦЧШЩЭЮЯ0123456789#%&*';
+  (function tick(){
+    if(i <= text.length){
+      let shown = text.slice(0, i);
+      if(i < text.length && i > 2 && Math.random() > .55){
+        shown += alphabet[Math.floor(Math.random() * alphabet.length)];
+      }
+      el.textContent = shown;
+      i += (Math.random() > .7 ? 2 : 1);
+      setTimeout(tick, 34);
+    }else{
+      el.textContent = text;
+    }
+  })();
+})();
+
+// последовательная подсветка шагов конвейера
+setInterval(() => {
+  const steps = $$('#flow .step');
+  if(!steps.length) return;
+  let idx = 0;
+  const t = setInterval(() => {
+    steps.forEach((s, i) => s.classList.toggle('lit', i === idx));
+    idx++;
+    if(idx >= steps.length){ clearInterval(t); steps.forEach(s => s.classList.remove('lit')); }
+  }, 380);
+}, 4200);
+
+/* ======================================================================
+   Инициализация
+   ====================================================================== */
+(async function init(){
+  loadSystem();
+  await loadDatasets();
+  buildPredictForm();
+  loadStats();
+  // глубокая ссылка на раздел: /#stats, /#how и т.д.
+  const h = (location.hash || '').replace('#', '');
+  if(['train', 'stats', 'how', 'examples'].includes(h)) showTab(h, true);
+  // автоописание первого датасета
+  setTimeout(describeSelected, 400);
+})();
+</script>
+</body>
+</html>

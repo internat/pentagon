@@ -1,0 +1,26 @@
+{
+  "model": "Linear Regression",
+  "dataset": "example_housing.csv",
+  "target": "price",
+  "task": "regression",
+  "features": [
+    "area_m2",
+    "rooms",
+    "age_years"
+  ],
+  "feature_dtypes": {
+    "area_m2": "float64",
+    "rooms": "int64",
+    "age_years": "float64"
+  },
+  "scoring": "r2",
+  "cv_folds": 5,
+  "test_size": 0.2,
+  "metrics": {
+    "MAE": 8.864917,
+    "MSE": 129.019328,
+    "RMSE": 11.358668,
+    "R2": 0.897956
+  },
+  "saved_at": "2026-09-27T18:24:38"
+}
